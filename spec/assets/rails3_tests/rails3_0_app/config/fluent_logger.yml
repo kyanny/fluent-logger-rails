@@ -1,0 +1,9 @@
+development:
+  fluent_host: '127.0.0.1'
+  fluent_port: 24224
+  appname: 'fluent-logger-rails-test'
+
+test:
+  fluent_host: '127.0.0.1'
+  fluent_port: 24225
+  appname: 'fluent-logger-rails-test'

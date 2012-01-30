@@ -1,0 +1,68 @@
+* Fluent Logger Rails
+** README
+
+/Note: Not tested in production/
+
+*** Introduction
+
+This is a basic gem that provides a FluentLoggerRails::Logger 
+which can be swapped instead of the default Rails 3 logger.
+*** Usage
+
+In order to swap the Rails default logger, we require the railtie included 
+in the gem so that it is loaded during Rails initialization process.
+
+#+BEGIN_SRC ruby
+gem 'fluent-logger-rails', :require => 'fluent_logger_rails/railtie'
+#+END_SRC
+
+You will also need to specify the following on a ~config/fluent_logger.yml~ 
+to connect to the fluentd process. You can also include erb tags to specify settings during runtime.
+
+#+BEGIN_SRC yaml
+development:
+  fluent_host: '127.0.0.1'
+  fluent_port: 24224
+  appname:     'rails3_test'
+#+END_SRC
+
+Otherwise, you can set up the following environment variables when starting the rails server.
+By default, the port used by fluentd is 24224.
+
+#+BEGIN_EXAMPLE
+APPLICATION_NAME='appname' rails server thin
+#+END_EXAMPLE
+
+On the fluentd side, you will need to setup the proper configuration so that it matches
+the tag of your application. Example:
+
+#+BEGIN_SRC conf
+<match appname.**>
+   type stdout
+</match>
+#+END_SRC
+*** Features
+
+By including this gem, all of the calls to ~logger~ will be rendered as a JSON message 
+and sent to the fluentd process.
+
+#+BEGIN_SRC ruby
+class MessagesController < ApplicationController
+  def index
+    logger.info   "Something happened"
+    render :text => "nothing"
+  end
+end
+#+END_SRC
+
+...will send the following to fluentd
+
+#+BEGIN_EXAMPLE
+rails3_test.stdout: { "text":"  Processing by MessagesController#index as HTML",  "level":"INFO" }
+#+END_EXAMPLE
+
+** Todo list
+*** TODO Fix problem during development when starting server and empty log/#{Rails.env}.log file does not exists
+*** TODO Log out the error stack traces
+*** TODO Add supported Rails versions
+*** TODO Add tests for Rails 3.1, Rails 3.2
